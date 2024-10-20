@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emoji Searcher</title>
+    <title>Emoji Categories with Search</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Emoji Searcher</h1>
-    <input type="text" id="search" placeholder="Search emojis...">
-    <div id="categories">
-        <button data-category="faces">Faces</button>
-        <button data-category="animals">Animals</button>
-        <button data-category="objects">Objects</button>
-        <!-- Add more categories as needed -->
+    <div class="container">
+        <h1>Emoji Categories</h1>
+        <input type="text" id="search" placeholder="Search emojis..." oninput="filterEmojis()">
+        <select id="category" onchange="filterEmojis()">
+            <option value="">All Categories</option>
+        </select>
+        <div id="emoji-list"></div>
     </div>
-    <div id="emoji-list"></div>
     <script src="script.js"></script>
 </body>
 </html>

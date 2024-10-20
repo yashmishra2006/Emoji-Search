@@ -1,55 +1,59 @@
-const emojiListEl = document.getElementById('emoji-list');
-const searchInput = document.getElementById('search');
-const categoryButtons = document.querySelectorAll('#categories button');
+const emojiListDiv = document.getElementById("emoji-list");
+const searchInput = document.getElementById("search");
+const categorySelect = document.getElementById("category");
 
 let emojis = [];
 
-// Fetch emojis from the API (you might need to adjust the URL depending on the API you use)
+// Fetch emoji data from an API
 async function fetchEmojis() {
-    const response = await fetch('https://api.emojipedia.org/v1/emojis');
-    const data = await response.json();
-    emojis = data; // Assuming data is an array of emoji objects
-    displayEmojis(emojis);
+    try {
+        const response = await fetch('https://emoji-api.com/emojis?access_key=d45df1d7eb1ddffc430849eaf95fad2a9bcd3cb6'); // Replace with your API key
+        emojis = await response.json();
+        populateCategories();
+    } catch (error) {
+        console.error('Error fetching emojis:', error);
+    }
 }
 
-// Display emojis in the list
-function displayEmojis(emojiArray) {
-    emojiListEl.innerHTML = '';
-    emojiArray.forEach(emoji => {
-        const emojiEl = document.createElement('div');
-        emojiEl.className = 'emoji';
-        emojiEl.innerText = emoji.char;
-        emojiEl.title = emoji.name; // Add tooltip with emoji name
-        emojiEl.onclick = () => copyToClipboard(emoji.char);
-        emojiListEl.appendChild(emojiEl);
+function populateCategories() {
+    const categories = [...new Set(emojis.map(emoji => emoji.category))];
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+        categorySelect.appendChild(option);
     });
 }
 
-// Copy emoji to clipboard
+function filterEmojis() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedCategory = categorySelect.value;
+
+    const filteredEmojis = emojis.filter(emoji => {
+        const matchesName = emoji.unicodeName.toLowerCase().includes(searchTerm);
+        const matchesCategory = selectedCategory ? emoji.category === selectedCategory : true;
+        return matchesName && matchesCategory;
+    });
+
+    renderEmojis(filteredEmojis);
+}
+
+function renderEmojis(filteredEmojis) {
+    emojiListDiv.innerHTML = ''; // Clear previous emoji list
+    filteredEmojis.forEach(emoji => {
+        const emojiItem = document.createElement('div');
+        emojiItem.className = 'emoji-item';
+        emojiItem.innerHTML = `${emoji.character} ${emoji.unicodeName}`;
+        emojiItem.onclick = () => copyToClipboard(emoji.character);
+        emojiListDiv.appendChild(emojiItem);
+    });
+}
+
 function copyToClipboard(emoji) {
     navigator.clipboard.writeText(emoji).then(() => {
-        alert('Copied to clipboard: ' + emoji);
+        alert(`Copied: ${emoji}`);
     });
 }
 
-// Filter emojis by search
-searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase();
-    const filteredEmojis = emojis.filter(emoji => 
-        emoji.name.toLowerCase().includes(query) || 
-        emoji.description.toLowerCase().includes(query)
-    );
-    displayEmojis(filteredEmojis);
-});
-
-// Filter by category
-categoryButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const category = button.dataset.category;
-        const filteredEmojis = emojis.filter(emoji => emoji.category === category);
-        displayEmojis(filteredEmojis);
-    });
-});
-
-// Initial fetch
+// Fetch emojis when the page loads
 fetchEmojis();
